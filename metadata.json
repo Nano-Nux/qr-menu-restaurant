@@ -1,0 +1,6 @@
+{
+  "name": "AURELIA — Fine Dining & QR Menu",
+  "description": "A luxury restaurant digital menu and dining experience with real-time reservation, interactive QR menu, culinary story, and admin management system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
