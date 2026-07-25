@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, CheckCircle, MessageSquare, PenTool, X, Send, Sparkles } from 'lucide-react';
+import { Star, CheckCircle, PenTool, X, Send } from 'lucide-react';
+import { useTranslation } from '@/lib/LanguageContext';
 
 interface ReviewsSectionProps {
   reviews: any[];
@@ -10,6 +11,7 @@ interface ReviewsSectionProps {
 }
 
 export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSectionProps) {
+  const { t } = useTranslation();
   const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [rating, setRating] = useState(5);
@@ -52,17 +54,17 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
   };
 
   return (
-    <section id="reviews" className="py-24 bg-[#0e0c0a] relative">
+    <section id="reviews" className="py-24 bg-[var(--background-color)] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 border-b border-white/10 pb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 border-b border-[var(--border-color)] pb-8">
           <div>
-            <span className="text-xs uppercase tracking-[0.35em] text-[#c5a059] font-medium block mb-2">
+            <span className="text-xs uppercase tracking-[0.35em] text-[var(--primary-color)] font-medium block mb-2">
               Diner Endorsements
             </span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-[#f8f5ee]">
-              Guest Experiences
+            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-[var(--text-color)]">
+              {t('reviews.title', 'Guest Testimonials')}
             </h2>
             <div className="flex items-center gap-2 mt-3">
               <div className="flex items-center text-amber-400">
@@ -70,25 +72,25 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
                   <Star key={i} className="w-4 h-4 fill-amber-400" />
                 ))}
               </div>
-              <span className="text-sm font-bold text-[#f8f5ee]">4.9 / 5.0</span>
-              <span className="text-xs text-[#a39783]">(380+ Verified Diners)</span>
+              <span className="text-sm font-bold text-[var(--text-color)]">4.9 / 5.0</span>
+              <span className="text-xs text-[var(--muted-text-color)]">(380+ Verified Diners)</span>
             </div>
           </div>
 
           <button
             onClick={() => setModalOpen(true)}
-            className="mt-6 md:mt-0 px-6 py-3 rounded-full bg-[#1c1813] hover:bg-[#c5a059] text-[#c5a059] hover:text-[#0c0b09] border border-[#c5a059]/40 font-semibold text-xs tracking-wider uppercase transition-all flex items-center gap-2"
+            className="mt-6 md:mt-0 px-6 py-3 rounded-full bg-[var(--surface-color)] hover:bg-[var(--primary-color)] text-[var(--primary-color)] hover:text-[var(--background-color)] border border-[var(--border-glow-color)] font-semibold text-xs tracking-wider uppercase transition-all flex items-center gap-2"
           >
-            <PenTool className="w-4 h-4" /> Write a Review
+            <PenTool className="w-4 h-4" /> {t('reviews.leaveReview', 'Share Your Experience')}
           </button>
         </div>
 
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {reviews.map((rev) => (
             <div
               key={rev.id}
-              className="glass-card rounded-2xl p-6 sm:p-8 border border-white/10 hover:border-[#c5a059]/30 transition-all flex flex-col justify-between"
+              className="glass-card rounded-2xl p-6 sm:p-8 border border-[var(--border-color)] hover:border-[var(--border-glow-color)] transition-all flex flex-col justify-between"
             >
               <div className="space-y-4">
                 {/* Rating Stars */}
@@ -98,24 +100,24 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
                       <Star key={i} className="w-4 h-4 fill-amber-400" />
                     ))}
                   </div>
-                  <span className="text-[11px] text-[#8c8273]">{rev.date}</span>
+                  <span className="text-[11px] text-[var(--muted-text-color)]">{rev.date}</span>
                 </div>
 
                 {/* Comment */}
-                <p className="text-xs sm:text-sm text-[#d1c7b7] font-light leading-relaxed italic">
-                  "{rev.comment}"
+                <p className="text-xs sm:text-sm text-[var(--muted-text-color)] font-light leading-relaxed italic">
+                  &quot;{rev.comment}&quot;
                 </p>
               </div>
 
               {/* User Avatar & Name */}
-              <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-3">
+              <div className="mt-6 pt-4 border-t border-[var(--border-color)] flex items-center gap-3">
                 <img
                   src={rev.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80"}
                   alt={rev.customer_name}
-                  className="w-10 h-10 rounded-full object-cover border border-[#c5a059]/40"
+                  className="w-10 h-10 rounded-full object-cover border border-[var(--border-glow-color)]"
                 />
                 <div>
-                  <h4 className="text-sm font-semibold text-[#f8f5ee]">
+                  <h4 className="text-sm font-semibold text-[var(--text-color)]">
                     {rev.customer_name}
                   </h4>
                   {rev.verified === 1 && (
@@ -142,7 +144,7 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-lg bg-[#12100d] border border-[#c5a059]/40 rounded-3xl p-6 sm:p-8 z-10 shadow-2xl space-y-6"
+              className="relative w-full max-w-lg bg-[var(--background-color)] border border-[var(--border-glow-color)] rounded-3xl p-6 sm:p-8 z-10 shadow-2xl space-y-6"
             >
               <button
                 onClick={() => setModalOpen(false)}
@@ -152,18 +154,18 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
               </button>
 
               <div className="space-y-1">
-                <span className="text-xs text-[#c5a059] font-bold uppercase tracking-wider">
+                <span className="text-xs text-[var(--primary-color)] font-bold uppercase tracking-wider">
                   Guest Feedback
                 </span>
-                <h3 className="font-serif text-2xl font-bold text-[#f8f5ee]">
-                  Share Your Culinary Review
+                <h3 className="font-serif text-2xl font-bold text-[var(--text-color)]">
+                  {t('reviews.leaveReview', 'Share Your Experience')}
                 </h3>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                    Your Full Name
+                  <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                    {t('reviews.yourName', 'Your Full Name')}
                   </label>
                   <input
                     type="text"
@@ -171,13 +173,13 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Lord Harrison Vance"
-                    className="w-full bg-[#181510] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                    className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                    Overall Experience Rating
+                  <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                    {t('reviews.rating', 'Rating')}
                   </label>
                   <div className="flex items-center gap-2 py-1">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -194,16 +196,16 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                    Your Dining Comment & Review
+                  <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                    {t('reviews.yourComment', 'Write your review...')}
                   </label>
                   <textarea
                     required
                     rows={4}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Tell us about the dishes, presentation, wine pairings, and table QR menu experience..."
-                    className="w-full bg-[#181510] border border-white/10 rounded-xl p-4 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                    placeholder="Tell us about the dishes and table QR menu experience..."
+                    className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl p-4 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                   />
                 </div>
 
@@ -213,16 +215,16 @@ export default function ReviewsSection({ reviews, onReviewSubmitted }: ReviewsSe
                   className={`w-full py-3.5 rounded-full font-bold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 ${
                     success
                       ? 'bg-emerald-600 text-white'
-                      : 'bg-gradient-to-r from-[#d4af37] to-[#c5a059] text-[#0c0b09] hover:shadow-lg'
+                      : 'bg-gold-gradient text-[var(--background-color)] hover:shadow-lg'
                   }`}
                 >
                   {success ? (
-                    'Review Published!'
+                    t('reviews.thankYou', 'Thank you!')
                   ) : submitting ? (
-                    'Publishing Review...'
+                    'Publishing...'
                   ) : (
                     <>
-                      <Send className="w-4 h-4" /> Submit Review
+                      <Send className="w-4 h-4" /> {t('reviews.submitReview', 'Submit Review')}
                     </>
                   )}
                 </button>

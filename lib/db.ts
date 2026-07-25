@@ -1,6 +1,7 @@
 import initSqlJs, { Database } from 'sql.js';
 import fs from 'fs';
 import path from 'path';
+import { hashPassword, verifyPassword } from './auth';
 
 let dbInstance: Database | null = null;
 const dbDir = path.join(process.cwd(), 'database');
@@ -22,26 +23,44 @@ function saveDatabase(db: Database) {
 export async function getDb(): Promise<Database> {
   if (dbInstance) return dbInstance;
 
-  const SQL = await initSqlJs();
+  const init = typeof initSqlJs === 'function' ? initSqlJs : (initSqlJs as any).default || initSqlJs;
+  let wasmBinary: Buffer | undefined;
 
+  try {
+    const wasmPath = path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm');
+    if (fs.existsSync(wasmPath)) {
+      wasmBinary = fs.readFileSync(wasmPath);
+    }
+  } catch (e) {
+    console.error('Failed to read sql-wasm.wasm:', e);
+  }
+
+  const SQL = await init({
+    locateFile: (file: string) => path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', file),
+    ...(wasmBinary ? { wasmBinary } : {})
+  });
+
+  let db: Database;
   if (fs.existsSync(dbFilePath)) {
     try {
       const fileBuffer = fs.readFileSync(dbFilePath);
       if (fileBuffer && fileBuffer.length > 0) {
-        dbInstance = new SQL.Database(fileBuffer);
+        db = new SQL.Database(fileBuffer);
       } else {
-        dbInstance = new SQL.Database();
+        db = new SQL.Database();
       }
     } catch (err) {
       console.error('Error reading existing database file, creating fresh DB:', err);
-      dbInstance = new SQL.Database();
+      db = new SQL.Database();
     }
   } else {
-    dbInstance = new SQL.Database();
+    db = new SQL.Database();
   }
 
+  dbInstance = db;
+
   // Create Tables
-  dbInstance.run(`
+  db.run(`
     CREATE TABLE IF NOT EXISTS restaurant (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -55,7 +74,10 @@ export async function getDb(): Promise<Database> {
       logo_url TEXT,
       hero_image_url TEXT,
       instagram_url TEXT,
-      facebook_url TEXT
+      facebook_url TEXT,
+      map_latitude TEXT,
+      map_longitude TEXT,
+      map_embed_url TEXT
     );
 
     CREATE TABLE IF NOT EXISTS categories (
@@ -119,6 +141,17 @@ export async function getDb(): Promise<Database> {
       guests INTEGER NOT NULL,
       seating_area TEXT,
       special_requests TEXT,
+      status TEXT DEFAULT 'Confirmed',
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS table_orders (
+      id TEXT PRIMARY KEY,
+      table_number TEXT NOT NULL,
+      customer_name TEXT NOT NULL,
+      items TEXT NOT NULL,
+      total_amount REAL NOT NULL,
+      status TEXT DEFAULT 'Pending',
       created_at TEXT NOT NULL
     );
 
@@ -137,14 +170,70 @@ export async function getDb(): Promise<Database> {
       data_url TEXT NOT NULL,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS admin_users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      salt TEXT NOT NULL,
+      name TEXT,
+      role TEXT DEFAULT 'admin',
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS support_tickets (
+      id TEXT PRIMARY KEY,
+      customer_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      subject TEXT,
+      message TEXT NOT NULL,
+      status TEXT DEFAULT 'Pending',
+      admin_reply TEXT,
+      replied_at TEXT,
+      created_at TEXT NOT NULL
+    );
   `);
 
+  // Add status column to reservations if missing
+  try {
+    db.run("ALTER TABLE reservations ADD COLUMN status TEXT DEFAULT 'Confirmed'");
+  } catch (e) {
+    // column already exists
+  }
+
+  // Add map columns to restaurant if missing
+  try {
+    db.run("ALTER TABLE restaurant ADD COLUMN map_latitude TEXT DEFAULT '51.5074'");
+  } catch (e) {}
+  try {
+    db.run("ALTER TABLE restaurant ADD COLUMN map_longitude TEXT DEFAULT '-0.1278'");
+  } catch (e) {}
+  try {
+    db.run("ALTER TABLE restaurant ADD COLUMN map_embed_url TEXT DEFAULT ''");
+  } catch (e) {}
+
+  // Seed default admin user if missing
+  try {
+    const adminCheck = db.exec("SELECT COUNT(*) as count FROM admin_users");
+    const adminCount = adminCheck[0]?.values[0]?.[0] as number;
+    if (adminCount === 0) {
+      const defaultCreds = hashPassword('aurelia2026');
+      db.run(
+        `INSERT INTO admin_users (id, username, password_hash, salt, name, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        ['admin_1', 'admin', defaultCreds.hash, defaultCreds.salt, 'Executive Manager', 'admin', new Date().toISOString()]
+      );
+    }
+  } catch (e) {
+    console.error('Failed to initialize admin_users:', e);
+  }
+
   // Check if Restaurant table has data, if not seed initial data
-  const restCheck = dbInstance.exec("SELECT COUNT(*) as count FROM restaurant");
+  const restCheck = db.exec("SELECT COUNT(*) as count FROM restaurant");
   const count = restCheck[0]?.values[0]?.[0] as number;
 
   if (count === 0) {
-    seedInitialData(dbInstance);
+    seedInitialData(db);
   }
 
   saveDatabase(dbInstance);
@@ -155,7 +244,7 @@ function seedInitialData(db: Database) {
   // 1. Restaurant
   db.run(`
     INSERT INTO restaurant (
-      id, name, tagline, description, chef_name, address, phone, whatsapp, opening_hours, logo_url, hero_image_url, instagram_url, facebook_url
+      id, name, tagline, description, chef_name, address, phone, whatsapp, opening_hours, logo_url, hero_image_url, instagram_url, facebook_url, map_latitude, map_longitude, map_embed_url
     ) VALUES (
       'rest_1',
       'AURELIA',
@@ -169,7 +258,10 @@ function seedInitialData(db: Database) {
       'https://images.unsplash.com/photo-1544025162-d76694265947?w=150&auto=format&fit=crop&q=80',
       'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&auto=format&fit=crop&q=80',
       'https://instagram.com/aurelia.dining',
-      'https://facebook.com/aureliadining'
+      'https://facebook.com/aureliadining',
+      '51.5074',
+      '-0.1278',
+      'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.003926955776!2d-0.1441866!3d51.507402!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487604d49fb42781%3A0xed492e8c894bf298!2sMayfair%2C%20London!5e0!3m2!1sen!2suk!4v1700000000000!5m2!1sen!2suk'
     );
   `);
 
@@ -443,7 +535,7 @@ export async function updateRestaurantInfo(data: any) {
   const db = await getDb();
   db.run(
     `UPDATE restaurant SET
-      name = ?, tagline = ?, description = ?, chef_name = ?, address = ?, phone = ?, whatsapp = ?, opening_hours = ?, logo_url = ?, hero_image_url = ?, instagram_url = ?, facebook_url = ?
+      name = ?, tagline = ?, description = ?, chef_name = ?, address = ?, phone = ?, whatsapp = ?, opening_hours = ?, logo_url = ?, hero_image_url = ?, instagram_url = ?, facebook_url = ?, map_latitude = ?, map_longitude = ?, map_embed_url = ?
      WHERE id = 'rest_1'`,
     [
       data.name,
@@ -457,7 +549,10 @@ export async function updateRestaurantInfo(data: any) {
       data.logo_url,
       data.hero_image_url,
       data.instagram_url,
-      data.facebook_url
+      data.facebook_url,
+      data.map_latitude || '51.5074',
+      data.map_longitude || '-0.1278',
+      data.map_embed_url || ''
     ]
   );
   saveDb();
@@ -703,6 +798,63 @@ export async function createReservation(data: any) {
   return id;
 }
 
+export async function updateReservationStatus(id: string, status: string) {
+  const db = await getDb();
+  db.run(`UPDATE reservations SET status = ? WHERE id = ?`, [status, id]);
+  saveDb();
+}
+
+export async function deleteReservation(id: string) {
+  const db = await getDb();
+  db.run(`DELETE FROM reservations WHERE id = ?`, [id]);
+  saveDb();
+}
+
+export async function getTableOrders() {
+  const db = await getDb();
+  const res = db.exec("SELECT * FROM table_orders ORDER BY rowid DESC");
+  if (!res[0]) return [];
+  const cols = res[0].columns;
+  return res[0].values.map(row => {
+    const item: Record<string, any> = {};
+    cols.forEach((col, idx) => (item[col] = row[idx]));
+    try {
+      if (typeof item.items === 'string') {
+        item.items = JSON.parse(item.items);
+      }
+    } catch (e) {
+      item.items = [];
+    }
+    return item;
+  });
+}
+
+export async function createTableOrder(data: { table_number: string; customer_name: string; items: any[]; total_amount: number }) {
+  const db = await getDb();
+  const id = 'ord_' + Date.now();
+  const createdAt = new Date().toISOString();
+  const itemsJson = JSON.stringify(data.items || []);
+  db.run(
+    `INSERT INTO table_orders (id, table_number, customer_name, items, total_amount, status, created_at)
+     VALUES (?, ?, ?, ?, ?, 'Pending', ?)`,
+    [id, data.table_number, data.customer_name, itemsJson, data.total_amount, createdAt]
+  );
+  saveDb();
+  return id;
+}
+
+export async function updateTableOrderStatus(id: string, status: string) {
+  const db = await getDb();
+  db.run(`UPDATE table_orders SET status = ? WHERE id = ?`, [status, id]);
+  saveDb();
+}
+
+export async function deleteTableOrder(id: string) {
+  const db = await getDb();
+  db.run(`DELETE FROM table_orders WHERE id = ?`, [id]);
+  saveDb();
+}
+
 export async function createServerCall(tableNumber: string, requestType: string) {
   const db = await getDb();
   const id = 'call_' + Date.now();
@@ -733,6 +885,12 @@ export async function updateServerCallStatus(id: string, status: string) {
   saveDb();
 }
 
+export async function deleteServerCall(id: string) {
+  const db = await getDb();
+  db.run(`DELETE FROM server_calls WHERE id = ?`, [id]);
+  saveDb();
+}
+
 export async function saveUploadedImageToDb(filename: string, mimeType: string, dataUrl: string) {
   const db = await getDb();
   const id = 'img_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
@@ -754,3 +912,85 @@ export async function getUploadedImageFromDb(id: string) {
   cols.forEach((col, idx) => (item[col] = res[0].values[0][idx]));
   return item;
 }
+
+export async function getAdminUserByUsername(username: string) {
+  const db = await getDb();
+  const res = db.exec("SELECT * FROM admin_users WHERE username = ?", [username]);
+  if (!res[0] || !res[0].values[0]) return null;
+  const cols = res[0].columns;
+  const item: Record<string, any> = {};
+  cols.forEach((col, idx) => (item[col] = res[0].values[0][idx]));
+  return item;
+}
+
+export async function verifyAdminCredentials(username: string, passwordInput: string) {
+  const admin = await getAdminUserByUsername(username);
+  if (!admin) return null;
+  const isValid = verifyPassword(passwordInput, admin.password_hash, admin.salt);
+  if (!isValid) return null;
+  return {
+    id: admin.id,
+    username: admin.username,
+    name: admin.name,
+    role: admin.role
+  };
+}
+
+export async function updateAdminCredentials(username: string, newPasswordInput?: string, newName?: string) {
+  const db = await getDb();
+  const admin = await getAdminUserByUsername(username);
+  if (!admin) return false;
+
+  if (newPasswordInput) {
+    const newHash = hashPassword(newPasswordInput);
+    db.run(
+      `UPDATE admin_users SET password_hash = ?, salt = ?, name = COALESCE(?, name) WHERE username = ?`,
+      [newHash.hash, newHash.salt, newName || null, username]
+    );
+  } else if (newName) {
+    db.run(`UPDATE admin_users SET name = ? WHERE username = ?`, [newName, username]);
+  }
+  saveDb();
+  return true;
+}
+
+export async function createSupportTicket(customer_name: string, email: string, phone: string, subject: string, message: string) {
+  const db = await getDb();
+  const id = 'ticket_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+  const createdAt = new Date().toISOString();
+  db.run(
+    `INSERT INTO support_tickets (id, customer_name, email, phone, subject, message, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?)`,
+    [id, customer_name, email, phone, subject, message, createdAt]
+  );
+  saveDb();
+  return id;
+}
+
+export async function getSupportTickets() {
+  const db = await getDb();
+  const res = db.exec("SELECT * FROM support_tickets ORDER BY rowid DESC");
+  if (!res[0]) return [];
+  const cols = res[0].columns;
+  return res[0].values.map(row => {
+    const item: Record<string, any> = {};
+    cols.forEach((col, idx) => (item[col] = row[idx]));
+    return item;
+  });
+}
+
+export async function replyToSupportTicket(id: string, reply: string) {
+  const db = await getDb();
+  const repliedAt = new Date().toISOString();
+  db.run(
+    `UPDATE support_tickets SET admin_reply = ?, replied_at = ?, status = 'Replied' WHERE id = ?`,
+    [reply, repliedAt, id]
+  );
+  saveDb();
+}
+
+export async function deleteSupportTicket(id: string) {
+  const db = await getDb();
+  db.run(`DELETE FROM support_tickets WHERE id = ?`, [id]);
+  saveDb();
+}
+

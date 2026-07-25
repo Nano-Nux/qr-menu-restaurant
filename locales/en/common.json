@@ -1,0 +1,138 @@
+{
+  "nav": {
+    "story": "Story",
+    "menu": "Menu",
+    "promotions": "Promotions",
+    "gallery": "Gallery",
+    "reviews": "Reviews",
+    "contact": "Contact",
+    "callServer": "Call Server",
+    "tableOrder": "Table Order",
+    "reserveTable": "Reserve Table",
+    "connectedTable": "Connected Table",
+    "adminDashboard": "Admin Dashboard",
+    "tagline": "Fine Dining & Cellar"
+  },
+  "hero": {
+    "welcome": "Welcome to",
+    "subtitle": "An extraordinary culinary symphony crafted with passion, artful precision, and the world's finest organic ingredients.",
+    "exploreMenu": "Explore Digital Menu",
+    "reserveTable": "Reserve A Table",
+    "tableConnected": "Table",
+    "scanNotice": "Digital Table Menu Active"
+  },
+  "story": {
+    "ourStory": "Our Culinary Heritage",
+    "title": "A Legacy of Culinary Distinction",
+    "p1": "Established in 2018, Aurelia represents the pinnacle of gastronomy, blending ancient heritage recipes with modern avant-garde techniques.",
+    "p2": "Every plate is a canvas, meticulously composed by our master chefs using ethically harvested produce, day-boat seafood, and aged artisanal beef.",
+    "chefQuote": "\"Cooking is an act of devotion, bringing people together around timeless flavours.\"",
+    "michelinBadge": "3-Star Culinary Excellence",
+    "organicIngredients": "100% Organic Local Sourcing"
+  },
+  "menu": {
+    "sectionTitle": "Gastronomic Collections",
+    "sectionSubtitle": "Scan through our curated menu offerings, filter by preferences, or search for signature dishes.",
+    "searchPlaceholder": "Search dishes, ingredients, wine pairs...",
+    "allCategories": "All Categories",
+    "popular": "Popular",
+    "recommended": "Recommended",
+    "soldOut": "Sold Out",
+    "addToOrder": "Add to Table Order",
+    "inOrder": "In Order List",
+    "viewDetails": "View Recipe & Allergens",
+    "spicyLevel": "Spicy Level",
+    "allergens": "Allergens",
+    "prepTime": "Prep Time",
+    "mins": "mins",
+    "dietaryAll": "All Dishes",
+    "dietaryChef": "Chef's Special",
+    "dietarySpicy": "Spicy",
+    "dietaryVeg": "Vegetarian",
+    "noDishesFound": "No dishes found matching your search."
+  },
+  "promotions": {
+    "title": "Chef's Seasonal Tasting & Special Offers",
+    "subtitle": "Exclusive epicurean journeys, curated wine pairings, and seasonal celebrations.",
+    "claimOffer": "Reserve for Special Offer",
+    "validUntil": "Valid Until"
+  },
+  "gallery": {
+    "title": "Sanctuary & Ambiance",
+    "subtitle": "Step into an atmosphere where ambient lighting, warm mahogany, and hand-finished velvet frame your memorable dining experience.",
+    "all": "All Photos",
+    "food": "Cuisine",
+    "interior": "Ambiance",
+    "wine": "Wine Cellar"
+  },
+  "reviews": {
+    "title": "Guest Testimonials",
+    "subtitle": "Read authentic dining experiences shared by our valued guests.",
+    "leaveReview": "Share Your Experience",
+    "yourName": "Your Full Name",
+    "yourComment": "Write your review...",
+    "rating": "Rating",
+    "submitReview": "Submit Review",
+    "thankYou": "Thank you for your review!"
+  },
+  "contact": {
+    "title": "Location & Reservations",
+    "openingHours": "Opening Hours",
+    "location": "Address & Coordinates",
+    "phone": "Direct Telephone",
+    "email": "Email Inquiry",
+    "getDirections": "Get Google Maps Directions",
+    "weekdays": "Monday - Thursday: 5:00 PM - 11:00 PM",
+    "weekends": "Friday - Sunday: 11:30 AM - 11:30 PM"
+  },
+  "footer": {
+    "description": "Exquisite dining experience crafted with passion, elegance, and timeless culinary art.",
+    "quickLinks": "Quick Links",
+    "rights": "All rights reserved. Digital QR Menu Architecture.",
+    "admin": "Admin Portal"
+  },
+  "orderDrawer": {
+    "title": "Table Order / Wishlist",
+    "tableLabel": "Table Number",
+    "emptyMessage": "Your table order is empty. Browse the menu to select dishes.",
+    "notesPlaceholder": "Special instructions (e.g. no onions, extra spicy)...",
+    "subtotal": "Subtotal",
+    "serviceTax": "Service Charge & Tax (10%)",
+    "total": "Estimated Total",
+    "sendToKitchen": "Send Order to Kitchen",
+    "clearOrder": "Clear List",
+    "orderSentSuccess": "Order submitted to kitchen successfully!"
+  },
+  "callServerModal": {
+    "title": "Call Table Attendant",
+    "subtitle": "Select the service you need at Table",
+    "water": "Refill Water",
+    "bill": "Request Bill / Payment",
+    "custom": "Assistance / General Request",
+    "customPlaceholder": "Specify your request (e.g. need extra napkin, cutlery)...",
+    "sendCall": "Call Attendant Now",
+    "calling": "Notifying Staff...",
+    "success": "Server has been notified and is coming to your table!"
+  },
+  "reservationModal": {
+    "title": "Reserve A Table",
+    "guests": "Number of Guests",
+    "date": "Preferred Date",
+    "time": "Preferred Time",
+    "name": "Full Name",
+    "phone": "Phone Number",
+    "notes": "Special Occasion / Dietary Notes",
+    "submit": "Confirm Reservation Request",
+    "submitting": "Processing...",
+    "success": "Table reservation request received! We look forward to welcoming you."
+  },
+  "themeSwitcher": {
+    "themeLabel": "Restaurant Branding Theme",
+    "default": "Aurelia Luxury Gold",
+    "modern": "Modern Slate & Amber",
+    "royal": "Royal Emerald & Sapphire"
+  },
+  "languageSwitcher": {
+    "selectLang": "Language"
+  }
+}

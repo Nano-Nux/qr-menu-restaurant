@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Utensils, BellRing, BookmarkCheck, Calendar, Menu, X, Sparkles, ChevronRight, Phone } from 'lucide-react';
+import { BellRing, BookmarkCheck, Calendar, Menu, X, Sparkles, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from '@/lib/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface NavbarProps {
   tableNumber: string | null;
@@ -21,6 +23,7 @@ export default function Navbar({
   onOpenReservation,
   restaurantInfo
 }: NavbarProps) {
+  const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -33,12 +36,12 @@ export default function Navbar({
   }, []);
 
   const navLinks = [
-    { name: 'Story', href: '#story' },
-    { name: 'Menu', href: '#menu' },
-    { name: 'Promotions', href: '#promotions' },
-    { name: 'Gallery', href: '#gallery' },
-    { name: 'Reviews', href: '#reviews' },
-    { name: 'Contact', href: '#contact' },
+    { name: t('nav.story', 'Story'), href: '#story' },
+    { name: t('nav.menu', 'Menu'), href: '#menu' },
+    { name: t('nav.promotions', 'Promotions'), href: '#promotions' },
+    { name: t('nav.gallery', 'Gallery'), href: '#gallery' },
+    { name: t('nav.reviews', 'Reviews'), href: '#reviews' },
+    { name: t('nav.contact', 'Contact'), href: '#contact' },
   ];
 
   return (
@@ -46,72 +49,79 @@ export default function Navbar({
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           scrolled
-            ? 'bg-[#0c0b09]/90 backdrop-blur-md border-b border-[#c5a059]/20 py-3 shadow-2xl'
-            : 'bg-gradient-to-b from-[#0c0b09]/90 via-[#0c0b09]/40 to-transparent py-5'
+            ? 'bg-[var(--background-color)]/95 backdrop-blur-md border-b border-[var(--border-glow-color)] py-3 shadow-2xl'
+            : 'bg-gradient-to-b from-[var(--background-color)]/90 via-[var(--background-color)]/40 to-transparent py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Brand Logo */}
           <a href="#" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d4af37] via-[#c5a059] to-[#8c6d27] p-[1px] shadow-lg group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full bg-[#12100d] rounded-full flex items-center justify-center">
-                <span className="font-serif text-lg font-bold text-gold-gradient">A</span>
+            <div className="w-10 h-10 rounded-full bg-gold-gradient p-[1px] shadow-lg group-hover:scale-105 transition-transform duration-300">
+              <div className="w-full h-full bg-[var(--surface-color)] rounded-full flex items-center justify-center">
+                <span className="font-serif text-lg font-bold text-gold-gradient">
+                  {(restaurantInfo?.name || 'AURELIA').charAt(0)}
+                </span>
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="font-serif text-xl font-bold tracking-widest text-[#f8f5ee] group-hover:text-[#c5a059] transition-colors">
+              <span className="font-serif text-xl font-bold tracking-widest text-[var(--text-color)] group-hover:text-[var(--primary-color)] transition-colors">
                 {restaurantInfo?.name || 'AURELIA'}
               </span>
-              <span className="text-[10px] tracking-[0.25em] text-[#c5a059] uppercase font-medium">
-                Fine Dining & Cellar
+              <span className="text-[10px] tracking-[0.2em] text-[var(--primary-color)] uppercase font-medium">
+                {t('nav.tagline', 'Fine Dining & Cellar')}
               </span>
             </div>
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6 lg:gap-8">
             {navLinks.map((link) => (
               <a
-                key={link.name}
+                key={link.href}
                 href={link.href}
-                className="text-sm tracking-wide text-[#d1c7b7] hover:text-[#c5a059] transition-colors relative font-medium group py-1"
+                className="text-sm tracking-wide text-[var(--muted-text-color)] hover:text-[var(--primary-color)] transition-colors relative font-medium group py-1"
               >
                 {link.name}
-                <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[#c5a059] transition-all duration-300 group-hover:w-full" />
+                <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-[var(--primary-color)] transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
           </nav>
 
-          {/* Actions & QR Status */}
+          {/* Actions & Language Switcher & QR Status */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Selector */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
+
             {/* Table Badge if QR Scanned */}
             {tableNumber && (
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1c1813] border border-[#c5a059]/40 text-xs font-semibold text-[#c5a059] animate-pulse">
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--surface-color)] border border-[var(--border-glow-color)] text-xs font-semibold text-[var(--primary-color)] animate-pulse">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Table {tableNumber}</span>
+                <span>{t('nav.connectedTable', 'Table')} {tableNumber}</span>
               </div>
             )}
 
             {/* Call Server Button */}
             <button
               onClick={onOpenCallServer}
-              className="p-2.5 rounded-full bg-[#181613] hover:bg-[#26221c] border border-white/10 hover:border-[#c5a059]/40 text-[#e6decb] transition-all relative group"
-              title="Call Server"
-              aria-label="Call Server"
+              className="p-2.5 rounded-full bg-[var(--surface-color)] hover:bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-[var(--border-glow-color)] text-[var(--text-color)] transition-all relative group"
+              title={t('nav.callServer', 'Call Server')}
+              aria-label={t('nav.callServer', 'Call Server')}
             >
-              <BellRing className="w-4 h-4 text-[#c5a059] group-hover:scale-110 transition-transform" />
+              <BellRing className="w-4 h-4 text-[var(--primary-color)] group-hover:scale-110 transition-transform" />
             </button>
 
             {/* Table Order Wishlist Button */}
             <button
               onClick={onOpenOrderDrawer}
-              className="p-2.5 rounded-full bg-[#181613] hover:bg-[#26221c] border border-white/10 hover:border-[#c5a059]/40 text-[#e6decb] transition-all relative group"
-              title="Table Order / Wishlist"
-              aria-label="Table Order / Wishlist"
+              className="p-2.5 rounded-full bg-[var(--surface-color)] hover:bg-[var(--surface-elevated)] border border-[var(--border-color)] hover:border-[var(--border-glow-color)] text-[var(--text-color)] transition-all relative group"
+              title={t('nav.tableOrder', 'Table Order')}
+              aria-label={t('nav.tableOrder', 'Table Order')}
             >
-              <BookmarkCheck className="w-4 h-4 text-[#e6decb] group-hover:text-[#c5a059] transition-colors" />
+              <BookmarkCheck className="w-4 h-4 text-[var(--text-color)] group-hover:text-[var(--primary-color)] transition-colors" />
               {orderCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-r from-[#d4af37] to-[#c5a059] text-[#0c0b09] font-bold text-[11px] flex items-center justify-center shadow-md animate-bounce">
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold-gradient text-[var(--background-color)] font-bold text-[11px] flex items-center justify-center shadow-md animate-bounce">
                   {orderCount}
                 </span>
               )}
@@ -120,16 +130,16 @@ export default function Navbar({
             {/* Reserve Table CTA */}
             <button
               onClick={onOpenReservation}
-              className="hidden lg:flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#d4af37] via-[#c5a059] to-[#a88238] hover:opacity-95 text-[#0c0b09] font-medium text-xs tracking-wider uppercase shadow-lg shadow-[#c5a059]/10 transition-all hover:shadow-[#c5a059]/25 hover:-translate-y-0.5 active:translate-y-0"
+              className="hidden lg:flex items-center gap-2 px-5 py-2 rounded-full bg-gold-gradient hover:opacity-95 text-[var(--background-color)] font-bold text-xs tracking-wider uppercase shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Reserve Table</span>
+              <span>{t('nav.reserveTable', 'Reserve Table')}</span>
             </button>
 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2.5 rounded-full bg-[#181613] border border-white/10 text-[#e6decb]"
+              className="lg:hidden p-2.5 rounded-full bg-[var(--surface-color)] border border-[var(--border-color)] text-[var(--text-color)]"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -146,27 +156,33 @@ export default function Navbar({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-[65px] z-30 bg-[#0c0b09]/95 backdrop-blur-xl border-b border-[#c5a059]/20 p-6 md:hidden shadow-2xl"
+            className="fixed inset-x-0 top-[65px] z-30 bg-[var(--background-color)]/95 backdrop-blur-xl border-b border-[var(--border-glow-color)] p-6 lg:hidden shadow-2xl space-y-4 overflow-y-auto max-h-[calc(100vh-80px)]"
           >
+            {/* Mobile Language Switcher */}
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
+              <span className="text-xs text-[var(--muted-text-color)] font-medium">Select Language</span>
+              <LanguageSwitcher compact />
+            </div>
+
             {tableNumber && (
-              <div className="mb-4 p-3 rounded-lg bg-[#181510] border border-[#c5a059]/30 flex items-center justify-between">
-                <span className="text-xs text-[#b8ad9a]">Connected Table</span>
-                <span className="text-xs font-bold text-[#c5a059] flex items-center gap-1">
+              <div className="p-3 rounded-lg bg-[var(--surface-color)] border border-[var(--border-glow-color)] flex items-center justify-between">
+                <span className="text-xs text-[var(--muted-text-color)]">{t('nav.connectedTable', 'Connected Table')}</span>
+                <span className="text-xs font-bold text-[var(--primary-color)] flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5" /> Table {tableNumber}
                 </span>
               </div>
             )}
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {navLinks.map((link) => (
                 <a
-                  key={link.name}
+                  key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-base text-[#e6decb] hover:text-[#c5a059] transition-colors py-2 border-b border-white/5 flex items-center justify-between font-medium"
+                  className="text-base text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors py-2 border-b border-[var(--border-color)] flex items-center justify-between font-medium"
                 >
                   <span>{link.name}</span>
-                  <ChevronRight className="w-4 h-4 text-[#c5a059]/60" />
+                  <ChevronRight className="w-4 h-4 text-[var(--primary-color)]/60" />
                 </a>
               ))}
 
@@ -176,17 +192,17 @@ export default function Navbar({
                     setMobileMenuOpen(false);
                     onOpenReservation();
                   }}
-                  className="w-full py-3 rounded-full bg-gradient-to-r from-[#d4af37] to-[#c5a059] text-[#0c0b09] font-semibold text-xs tracking-wider uppercase text-center flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full py-3 rounded-full bg-gold-gradient text-[var(--background-color)] font-bold text-xs tracking-wider uppercase text-center flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Calendar className="w-4 h-4" />
-                  <span>Reserve Table</span>
+                  <span>{t('nav.reserveTable', 'Reserve Table')}</span>
                 </button>
 
                 <a
                   href="/admin"
-                  className="w-full py-2.5 rounded-full bg-[#181613] border border-white/10 text-xs text-[#b8ad9a] text-center hover:text-white transition-colors"
+                  className="w-full py-2.5 rounded-full bg-[var(--surface-color)] border border-[var(--border-color)] text-xs text-[var(--muted-text-color)] text-center hover:text-white transition-colors"
                 >
-                  Restaurant Admin Dashboard
+                  {t('nav.adminDashboard', 'Admin Dashboard')}
                 </a>
               </div>
             </div>

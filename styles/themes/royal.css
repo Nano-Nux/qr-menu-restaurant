@@ -1,0 +1,21 @@
+/* Royal Theme: Emerald & Gold Sapphire */
+[data-theme="royal"] {
+  --primary-color: #10b981;
+  --primary-gradient: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  --secondary-color: #34d399;
+  --accent-color: #047857;
+  --background-color: #062016;
+  --surface-color: #0b3323;
+  --surface-elevated: #124d36;
+  --text-color: #ecfdf5;
+  --muted-text-color: #81e6d9;
+  --border-color: rgba(167, 243, 208, 0.15);
+  --border-glow-color: rgba(16, 185, 129, 0.35);
+  
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  
+  --card-shadow: 0 10px 30px -10px rgba(6, 32, 22, 0.8);
+  --glow-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+}

@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getReservations, createReservation, updateReservationStatus, deleteReservation } from '@/lib/db';
+import { getSupportTickets, createSupportTicket, replyToSupportTicket, deleteSupportTicket } from '@/lib/db';
 
 export async function GET() {
   try {
-    const reservations = await getReservations();
-    return NextResponse.json({ success: true, reservations });
+    const tickets = await getSupportTickets();
+    return NextResponse.json({ success: true, tickets });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -13,10 +13,11 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    if (!body.guest_name || !body.email || !body.phone || !body.date || !body.time) {
-      return NextResponse.json({ success: false, error: 'Missing required reservation fields' }, { status: 400 });
+    const { customer_name, email, phone, subject, message } = body;
+    if (!customer_name || !email || !message) {
+      return NextResponse.json({ success: false, error: 'Name, email, and message are required' }, { status: 400 });
     }
-    const id = await createReservation(body);
+    const id = await createSupportTicket(customer_name, email, phone || '', subject || '', message);
     return NextResponse.json({ success: true, id });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -25,11 +26,11 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const { id, status } = await req.json();
-    if (!id || !status) {
-      return NextResponse.json({ success: false, error: 'Id and status are required' }, { status: 400 });
+    const { id, admin_reply } = await req.json();
+    if (!id || !admin_reply) {
+      return NextResponse.json({ success: false, error: 'ID and reply content are required' }, { status: 400 });
     }
-    await updateReservationStatus(id, status);
+    await replyToSupportTicket(id, admin_reply);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -41,9 +42,9 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     if (!id) {
-      return NextResponse.json({ success: false, error: 'Reservation ID is required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Ticket ID is required' }, { status: 400 });
     }
-    await deleteReservation(id);
+    await deleteSupportTicket(id);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

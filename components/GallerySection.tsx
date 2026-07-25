@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, X, Maximize2, Sparkles, Utensils, Wine, Eye } from 'lucide-react';
+import { X, Maximize2 } from 'lucide-react';
+import { useTranslation } from '@/lib/LanguageContext';
 
 interface GallerySectionProps {
   gallery: any[];
 }
 
 export default function GallerySection({ gallery }: GallerySectionProps) {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
 
@@ -19,19 +21,19 @@ export default function GallerySection({ gallery }: GallerySectionProps) {
     : gallery.filter((item) => item.category === activeCategory);
 
   return (
-    <section id="gallery" className="py-24 bg-[#0c0b09] relative">
+    <section id="gallery" className="py-24 bg-[var(--background-color)] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs uppercase tracking-[0.35em] text-[#c5a059] font-medium block mb-2">
+          <span className="text-xs uppercase tracking-[0.35em] text-[var(--primary-color)] font-medium block mb-2">
             Visual Ambiance
           </span>
-          <h2 className="font-serif text-3xl sm:text-5xl font-bold text-[#f8f5ee]">
-            Gallery & Atmosphere
+          <h2 className="font-serif text-3xl sm:text-5xl font-bold text-[var(--text-color)]">
+            {t('gallery.title', 'Sanctuary & Ambiance')}
           </h2>
-          <p className="text-xs sm:text-sm text-[#b8ad9a] mt-3 font-light">
-            A glimpse into our candlelit dining salons, open-flame culinary hearth, and private wine cellars.
+          <p className="text-xs sm:text-sm text-[var(--muted-text-color)] mt-3 font-light">
+            {t('gallery.subtitle', 'Step into an atmosphere where ambient lighting, warm mahogany, and hand-finished velvet frame your memorable dining experience.')}
           </p>
         </div>
 
@@ -43,8 +45,8 @@ export default function GallerySection({ gallery }: GallerySectionProps) {
               onClick={() => setActiveCategory(cat)}
               className={`px-5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all border ${
                 activeCategory === cat
-                  ? 'bg-[#c5a059] text-[#0c0b09] border-[#c5a059] shadow-lg'
-                  : 'bg-[#181510] text-[#b8ad9a] border-white/10 hover:border-[#c5a059]/40 hover:text-white'
+                  ? 'bg-[var(--primary-color)] text-[var(--background-color)] border-[var(--primary-color)] shadow-lg'
+                  : 'bg-[var(--surface-color)] text-[var(--muted-text-color)] border-[var(--border-color)] hover:border-[var(--border-glow-color)] hover:text-white'
               }`}
             >
               {cat}
@@ -58,27 +60,27 @@ export default function GallerySection({ gallery }: GallerySectionProps) {
             <div
               key={item.id}
               onClick={() => setSelectedImage(item)}
-              className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer border border-white/10 hover:border-[#c5a059]/50 transition-all duration-500 shadow-xl"
+              className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer border border-[var(--border-color)] hover:border-[var(--border-glow-color)] transition-all duration-500 shadow-xl"
             >
               <img
                 src={item.image}
                 alt={item.caption || 'Aurelia Ambiance'}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0c0b09] via-[#0c0b09]/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--background-color)] via-[var(--background-color)]/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
 
               {/* Caption Overlay */}
               <div className="absolute bottom-0 inset-x-0 p-6 flex items-end justify-between z-10">
                 <div>
-                  <span className="text-[10px] font-bold text-[#c5a059] uppercase tracking-wider block mb-1">
+                  <span className="text-[10px] font-bold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
                     {item.category}
                   </span>
-                  <p className="font-serif text-base font-bold text-[#f8f5ee] line-clamp-1">
+                  <p className="font-serif text-base font-bold text-[var(--text-color)] line-clamp-1">
                     {item.caption || 'Aurelia Moment'}
                   </p>
                 </div>
 
-                <div className="w-9 h-9 rounded-full bg-[#0c0b09]/80 border border-[#c5a059]/50 flex items-center justify-center text-[#c5a059] opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="w-9 h-9 rounded-full bg-[var(--background-color)]/80 border border-[var(--border-glow-color)] flex items-center justify-center text-[var(--primary-color)] opacity-0 group-hover:opacity-100 transition-opacity">
                   <Maximize2 className="w-4 h-4" />
                 </div>
               </div>
@@ -98,11 +100,11 @@ export default function GallerySection({ gallery }: GallerySectionProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-4xl w-full bg-[#12100d] rounded-3xl overflow-hidden border border-[#c5a059]/40 z-10 shadow-2xl"
+              className="relative max-w-4xl w-full bg-[var(--background-color)] rounded-3xl overflow-hidden border border-[var(--border-glow-color)] z-10 shadow-2xl"
             >
               <button
                 onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 z-20 p-3 rounded-full bg-[#0c0b09]/80 text-white hover:bg-[#181510] border border-white/20"
+                className="absolute top-4 right-4 z-20 p-3 rounded-full bg-black/80 text-white hover:bg-[var(--surface-color)] border border-white/20"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -115,12 +117,12 @@ export default function GallerySection({ gallery }: GallerySectionProps) {
                 />
               </div>
 
-              <div className="p-6 bg-[#0c0b09] flex items-center justify-between">
+              <div className="p-6 bg-[var(--background-color)] flex items-center justify-between">
                 <div>
-                  <span className="text-xs text-[#c5a059] font-bold uppercase tracking-wider">
+                  <span className="text-xs text-[var(--primary-color)] font-bold uppercase tracking-wider">
                     {selectedImage.category}
                   </span>
-                  <h3 className="font-serif text-xl font-bold text-[#f8f5ee] mt-1">
+                  <h3 className="font-serif text-xl font-bold text-[var(--text-color)] mt-1">
                     {selectedImage.caption}
                   </h3>
                 </div>

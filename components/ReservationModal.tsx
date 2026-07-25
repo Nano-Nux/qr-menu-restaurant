@@ -2,16 +2,19 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Clock, Users, MapPin, Sparkles, X, CheckCircle, QrCode } from 'lucide-react';
+import { X, CheckCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
+import { useTranslation } from '@/lib/LanguageContext';
 
 interface ReservationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialSpecialRequest?: string;
 }
 
-export default function ReservationModal({ isOpen, onClose }: ReservationModalProps) {
+export default function ReservationModal({ isOpen, onClose, initialSpecialRequest }: ReservationModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -19,7 +22,13 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
   const [time, setTime] = useState('19:30');
   const [guests, setGuests] = useState(2);
   const [seatingArea, setSeatingArea] = useState('Main Dining Salon');
-  const [specialRequests, setSpecialRequests] = useState('');
+  const [specialRequests, setSpecialRequests] = useState(initialSpecialRequest || '');
+  const [prevInitialRequest, setPrevInitialRequest] = useState(initialSpecialRequest);
+
+  if (initialSpecialRequest !== prevInitialRequest && isOpen) {
+    setPrevInitialRequest(initialSpecialRequest);
+    setSpecialRequests(initialSpecialRequest || '');
+  }
   
   const [submitting, setSubmitting] = useState(false);
   const [confirmedReservation, setConfirmedReservation] = useState<any | null>(null);
@@ -52,7 +61,7 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
       const data = await res.json();
       if (data.success) {
         // Generate QR code for ticket
-        const ticketInfo = `AURELIA RESERVATION #${data.id}\nGuest: ${name}\nDate: ${date} at ${time}\nGuests: ${guests} (${seatingArea})`;
+        const ticketInfo = `RESERVATION #${data.id}\nGuest: ${name}\nDate: ${date} at ${time}\nGuests: ${guests} (${seatingArea})`;
         const qrUrl = await QRCode.toDataURL(ticketInfo, { width: 200, margin: 1 });
         setQrCodeDataUrl(qrUrl);
 
@@ -89,7 +98,7 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-xl bg-[#12100d] border border-[#c5a059]/40 rounded-3xl p-6 sm:p-8 z-10 shadow-2xl space-y-6 my-auto max-h-[90vh] overflow-y-auto no-scrollbar"
+          className="relative w-full max-w-xl bg-[var(--background-color)] border border-[var(--border-glow-color)] rounded-3xl p-6 sm:p-8 z-10 shadow-2xl space-y-6 my-auto max-h-[90vh] overflow-y-auto no-scrollbar"
         >
           <button
             onClick={onClose}
@@ -101,51 +110,51 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
           {confirmedReservation ? (
             /* Reservation Success Confirmation Ticket */
             <div className="text-center space-y-6 py-4">
-              <div className="w-16 h-16 rounded-full bg-[#181510] border border-[#c5a059] text-[#c5a059] flex items-center justify-center mx-auto shadow-2xl">
+              <div className="w-16 h-16 rounded-full bg-[var(--surface-color)] border border-[var(--primary-color)] text-[var(--primary-color)] flex items-center justify-center mx-auto shadow-2xl">
                 <CheckCircle className="w-8 h-8" />
               </div>
 
               <div className="space-y-1">
-                <span className="text-xs uppercase tracking-[0.25em] text-[#c5a059] font-bold">
-                  Reservation Confirmed
+                <span className="text-xs uppercase tracking-[0.25em] text-[var(--primary-color)] font-bold">
+                  {t('reservationModal.success', 'Reservation Confirmed')}
                 </span>
-                <h3 className="font-serif text-3xl font-bold text-[#f8f5ee]">
+                <h3 className="font-serif text-3xl font-bold text-[var(--text-color)]">
                   We Await Your Presence
                 </h3>
               </div>
 
               {/* Digital Pass Ticket Card */}
-              <div className="p-6 rounded-2xl bg-[#181510] border border-[#c5a059]/30 text-left space-y-4 shadow-2xl relative">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="text-xs text-[#a39783]">Booking Reference</span>
-                  <span className="text-xs font-bold text-[#c5a059] font-mono">#{confirmedReservation.id}</span>
+              <div className="p-6 rounded-2xl bg-[var(--surface-color)] border border-[var(--border-glow-color)] text-left space-y-4 shadow-2xl relative">
+                <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
+                  <span className="text-xs text-[var(--muted-text-color)]">Booking Reference</span>
+                  <span className="text-xs font-bold text-[var(--primary-color)] font-mono">#{confirmedReservation.id}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-xs">
                   <div>
-                    <span className="text-[10px] text-[#8c8273] uppercase tracking-wider block">Guest Name</span>
+                    <span className="text-[10px] text-[var(--muted-text-color)] uppercase tracking-wider block">{t('reservationModal.name', 'Full Name')}</span>
                     <span className="font-semibold text-white">{confirmedReservation.name}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#8c8273] uppercase tracking-wider block">Party Size</span>
+                    <span className="text-[10px] text-[var(--muted-text-color)] uppercase tracking-wider block">{t('reservationModal.guests', 'Guests')}</span>
                     <span className="font-semibold text-white">{confirmedReservation.guests} Guests</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#8c8273] uppercase tracking-wider block">Date & Time</span>
+                    <span className="text-[10px] text-[var(--muted-text-color)] uppercase tracking-wider block">{t('reservationModal.date', 'Date')} & {t('reservationModal.time', 'Time')}</span>
                     <span className="font-semibold text-white">{confirmedReservation.date} at {confirmedReservation.time}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#8c8273] uppercase tracking-wider block">Seating Area</span>
-                    <span className="font-semibold text-[#c5a059]">{confirmedReservation.seatingArea}</span>
+                    <span className="text-[10px] text-[var(--muted-text-color)] uppercase tracking-wider block">Seating Area</span>
+                    <span className="font-semibold text-[var(--primary-color)]">{confirmedReservation.seatingArea}</span>
                   </div>
                 </div>
 
                 {qrCodeDataUrl && (
-                  <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                    <img src={qrCodeDataUrl} alt="Reservation Pass QR" className="w-20 h-20 rounded-lg border border-white/10" />
+                  <div className="pt-4 border-t border-[var(--border-color)] flex items-center justify-between">
+                    <img src={qrCodeDataUrl} alt="Reservation Pass QR" className="w-20 h-20 rounded-lg border border-[var(--border-color)]" />
                     <div className="text-right max-w-[180px]">
-                      <span className="text-[10px] text-[#c5a059] uppercase font-bold tracking-wider block">Digital Entry QR</span>
-                      <span className="text-[11px] text-[#a39783]">Present this QR pass upon arrival at reception.</span>
+                      <span className="text-[10px] text-[var(--primary-color)] uppercase font-bold tracking-wider block">Digital Entry QR</span>
+                      <span className="text-[11px] text-[var(--muted-text-color)]">Present this QR pass upon arrival.</span>
                     </div>
                   </div>
                 )}
@@ -153,7 +162,7 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
 
               <button
                 onClick={onClose}
-                className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#d4af37] to-[#c5a059] text-[#0c0b09] font-bold text-xs uppercase tracking-wider shadow-lg"
+                className="w-full py-3.5 rounded-full bg-gold-gradient text-[var(--background-color)] font-bold text-xs uppercase tracking-wider shadow-lg"
               >
                 Done & Return to Site
               </button>
@@ -162,18 +171,18 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
             /* Reservation Form */
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-1">
-                <span className="text-xs text-[#c5a059] font-bold uppercase tracking-wider">
+                <span className="text-xs text-[var(--primary-color)] font-bold uppercase tracking-wider">
                   Table Booking
                 </span>
-                <h3 className="font-serif text-2xl font-bold text-[#f8f5ee]">
-                  Reserve A Table At Aurelia
+                <h3 className="font-serif text-2xl font-bold text-[var(--text-color)]">
+                  {t('reservationModal.title', 'Reserve A Table')}
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                    Full Name
+                  <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                    {t('reservationModal.name', 'Full Name')}
                   </label>
                   <input
                     type="text"
@@ -181,13 +190,13 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Dr. Evelyn St. Claire"
-                    className="w-full bg-[#181510] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                    className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                    Phone Number
+                  <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                    {t('reservationModal.phone', 'Phone Number')}
                   </label>
                   <input
                     type="tel"
@@ -195,13 +204,13 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+1 (310) 882-9010"
-                    className="w-full bg-[#181510] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                    className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
+                <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
                   Email Address
                 </label>
                 <input
@@ -210,32 +219,32 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="evelyn@domain.com"
-                  className="w-full bg-[#181510] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                  className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                    Reservation Date
+                  <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                    {t('reservationModal.date', 'Preferred Date')}
                   </label>
                   <input
                     type="date"
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-[#181510] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                    className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                    Number of Guests
+                  <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                    {t('reservationModal.guests', 'Number of Guests')}
                   </label>
                   <select
                     value={guests}
                     onChange={(e) => setGuests(Number(e.target.value))}
-                    className="w-full bg-[#181510] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                    className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 10, 12].map((num) => (
                       <option key={num} value={num}>
@@ -247,8 +256,8 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                  Dining Time Slot
+                <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                  {t('reservationModal.time', 'Preferred Time')}
                 </label>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                   {timeSlots.map((slot) => (
@@ -258,8 +267,8 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
                       onClick={() => setTime(slot)}
                       className={`py-2 rounded-lg text-xs font-semibold border transition-all ${
                         time === slot
-                          ? 'bg-[#c5a059] text-[#0c0b09] border-[#c5a059]'
-                          : 'bg-[#181510] text-[#a39783] border-white/10 hover:border-white/20'
+                          ? 'bg-[var(--primary-color)] text-[var(--background-color)] border-[var(--primary-color)]'
+                          : 'bg-[var(--surface-color)] text-[var(--muted-text-color)] border-[var(--border-color)] hover:border-[var(--border-glow-color)]'
                       }`}
                     >
                       {slot}
@@ -269,7 +278,7 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
+                <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
                   Seating Environment Preference
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -280,8 +289,8 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
                       onClick={() => setSeatingArea(area)}
                       className={`p-2.5 rounded-lg border text-left text-xs font-medium transition-all ${
                         seatingArea === area
-                          ? 'bg-[#1f1b14] border-[#c5a059] text-[#c5a059]'
-                          : 'bg-[#181510] border-white/5 text-[#a39783] hover:border-white/20'
+                          ? 'bg-[var(--surface-elevated)] border-[var(--primary-color)] text-[var(--primary-color)]'
+                          : 'bg-[var(--surface-color)] border-[var(--border-color)] text-[var(--muted-text-color)] hover:border-[var(--border-glow-color)]'
                       }`}
                     >
                       {area}
@@ -291,24 +300,24 @@ export default function ReservationModal({ isOpen, onClose }: ReservationModalPr
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[#c5a059] uppercase tracking-wider block mb-1">
-                  Special Occasion or Dietary Notes
+                <label className="text-xs font-semibold text-[var(--primary-color)] uppercase tracking-wider block mb-1">
+                  {t('reservationModal.notes', 'Special Occasion / Dietary Notes')}
                 </label>
                 <input
                   type="text"
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
-                  placeholder="e.g. Celebrating Anniversary, quiet booth preference..."
-                  className="w-full bg-[#181510] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[#c5a059]"
+                  placeholder="e.g. Celebrating Anniversary..."
+                  className="w-full bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-[var(--primary-color)]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#d4af37] via-[#c5a059] to-[#9e7b32] text-[#0c0b09] font-bold text-xs tracking-wider uppercase hover:shadow-xl transition-all"
+                className="w-full py-3.5 rounded-full bg-gold-gradient text-[var(--background-color)] font-bold text-xs tracking-wider uppercase hover:shadow-xl transition-all"
               >
-                {submitting ? 'Confirming Reservation...' : 'Confirm Reservation'}
+                {submitting ? t('reservationModal.submitting', 'Processing...') : t('reservationModal.submit', 'Confirm Reservation Request')}
               </button>
             </form>
           )}

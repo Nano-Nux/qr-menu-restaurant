@@ -56,11 +56,13 @@ export default function ImageInputPicker({ value, onChange, label = 'Image Sourc
   }, []);
 
   // Update local states when value prop changes externally
-  useEffect(() => {
-    if (value && activeTab === 'url') {
-      setDirectUrlInput(value);
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    if (activeTab === 'url') {
+      setDirectUrlInput(value || '');
     }
-  }, [value, activeTab]);
+  }
 
   // Handle Google Drive Link conversion in real time
   const handleGdriveInputChange = (input: string) => {

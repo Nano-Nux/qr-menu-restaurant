@@ -17,7 +17,13 @@ import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 
 export default function HomePage() {
-  const [tableNumber, setTableNumber] = useState<string | null>(null);
+  const [tableNumber, setTableNumber] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('table');
+    }
+    return null;
+  });
 
   // Data states
   const [restaurant, setRestaurant] = useState<any>(null);
@@ -34,17 +40,16 @@ export default function HomePage() {
   const [orderDrawerOpen, setOrderDrawerOpen] = useState(false);
   const [callServerOpen, setCallServerOpen] = useState(false);
   const [reservationOpen, setReservationOpen] = useState(false);
+  const [reservationSpecialNote, setReservationSpecialNote] = useState('');
 
-  // Read URL query parameter for table number e.g. /?table=08
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const table = params.get('table');
-      if (table) {
-        setTableNumber(table);
-      }
+  const handleOpenReservation = (specialNote?: string) => {
+    if (specialNote) {
+      setReservationSpecialNote(specialNote);
+    } else {
+      setReservationSpecialNote('');
     }
-  }, []);
+    setReservationOpen(true);
+  };
 
   // Fetch all database content on load
   const fetchData = async () => {
@@ -71,7 +76,35 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetchData();
+    let active = true;
+    const load = async () => {
+      try {
+        const [rRes, mRes, pRes, gRes, revRes] = await Promise.all([
+          fetch('/api/restaurant').then((r) => r.json()),
+          fetch('/api/menu').then((r) => r.json()),
+          fetch('/api/promotions').then((r) => r.json()),
+          fetch('/api/gallery').then((r) => r.json()),
+          fetch('/api/reviews').then((r) => r.json())
+        ]);
+
+        if (active) {
+          if (rRes.data) setRestaurant(rRes.data);
+          if (mRes.categories) setCategories(mRes.categories);
+          if (mRes.items) setMenuItems(mRes.items);
+          if (pRes.promotions) setPromotions(pRes.promotions);
+          if (gRes.gallery) setGallery(gRes.gallery);
+          if (revRes.reviews) setReviews(revRes.reviews);
+        }
+      } catch (err) {
+        console.error('Failed to load restaurant data:', err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Table Order / Wishlist Session Actions
@@ -121,7 +154,7 @@ export default function HomePage() {
         orderCount={tableOrder.reduce((acc, curr) => acc + (curr.quantity || 1), 0)}
         onOpenOrderDrawer={() => setOrderDrawerOpen(true)}
         onOpenCallServer={() => setCallServerOpen(true)}
-        onOpenReservation={() => setReservationOpen(true)}
+        onOpenReservation={() => handleOpenReservation()}
         restaurantInfo={restaurant}
       />
 
@@ -130,7 +163,7 @@ export default function HomePage() {
         restaurantInfo={restaurant}
         tableNumber={tableNumber}
         onExploreMenu={handleScrollToMenu}
-        onReserveTable={() => setReservationOpen(true)}
+        onReserveTable={() => handleOpenReservation()}
       />
 
       {/* Culinary Story */}
@@ -155,7 +188,7 @@ export default function HomePage() {
       {/* Seasonal Promotions & Tasting Menus */}
       <PromotionsSection
         promotions={promotions}
-        onOpenReservation={() => setReservationOpen(true)}
+        onOpenReservation={handleOpenReservation}
       />
 
       {/* Gallery & Ambiance */}
@@ -200,6 +233,7 @@ export default function HomePage() {
       <ReservationModal
         isOpen={reservationOpen}
         onClose={() => setReservationOpen(false)}
+        initialSpecialRequest={reservationSpecialNote}
       />
 
     </div>
